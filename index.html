@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <base target="_top">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Conclusion Offices on OpenStreetMap</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        .leaflet-container {
+            height: 800px;
+            width: 1200px;
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id='map'></div>
+    <script>
+        const conclusionOfficesGeoJSONURL = "https://raw.githubusercontent.com/lucasjellema/visualization-netherlands-and-conclusion-locations/main/conclusion-offices-geojson.json";
+
+        fetch(conclusionOfficesGeoJSONURL)
+            .then(response => response.json())
+            .then(data => {
+                const officeLayer = L.geoJSON(data, {
+                    onEachFeature,
+                    pointToLayer(feature, latlng) {
+                        return L.circleMarker(latlng, {
+                            radius: 8,
+                            fillColor: '#ff7800',
+                            color: '#000',
+                            weight: 1,
+                            opacity: 1,
+                            fillOpacity: 0.8
+                        });
+                    }
+                }).addTo(map);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+
+        const map = L.map('map').setView([52, 5], 8);
+
+        const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        const onEachFeature = (feature, layer) => {
+            let popupContent = `<h3>${feature.properties.statnaam}</h3>
+            ${feature.properties.address}
+            ${feature.properties.pictureURL ? '<img src="' + feature.properties.pictureURL + '" width="140px"/>' : ""}
+                </p>`;
+            if (feature.properties.companies) {
+                feature.properties.companies.forEach(company => {
+                    popupContent += `<p>${company.name} (<a href="${company.website}" target="_new">website</a>)   
+                        ${company.logoURL ? '<img src="' + company.logoURL + '" width="80px"/>' : ""}
+                        </p>`
+                })
+            }    
+
+            layer.bindPopup(popupContent);
+        }
+
+
+
+
+    </script>
+
+
+
+</body>
+
+</html>
